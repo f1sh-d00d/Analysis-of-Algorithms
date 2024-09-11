@@ -1,0 +1,120 @@
+import math
+import sys
+import time
+
+def transform(num_string):
+    '''given a number that is a string, take the length of the string and check to see if it is a factor of two.
+    if it is not a factor of two find the nearest length greater than the current length that is a factor of two
+    and backfill the number with zeros to make it that length'''
+    num_len = len(num_string)
+    
+    #if the length is already a factor of two, no need to backfill
+    if math.log2(num_len).is_integer():
+        return num_string
+    else:
+        exact_log = math.log2(num_len)
+        remainder = math.log2(num_len) % 1
+        next_log = exact_log - remainder + 1
+        needed_zeros = 2**(next_log) - num_len
+
+        zeros = "0" * int(needed_zeros)
+        transformed_num = zeros + num_string
+        return transformed_num
+
+def match(target, num):
+    '''given two numbers as strings, backfill num with zeros so that it is the same length as the target'''
+    needed_zeros = len(target) - len(num)
+    zeros = "0" * needed_zeros
+    matched_num = zeros + num
+    return matched_num
+
+
+def karatsuba(num1, num2):
+    '''recursively compute the product of two numbers using Karatsuba's algorithm
+        n = number of digits in largest number
+
+        given inputs x and y
+        split x and why into even halfs, a,b,c,d respectively
+
+        a*b*c*d = (a+b)(c+d) - ac - bd
+
+        product = 10^n*ac + 10^(n/2)*abcd + bd'''
+    #backfill input numbers as needed
+    x = transform(num1)
+    y = transform(num2)
+    
+    #make sure input numbers are the same length
+    if len(x) > len(y):
+        fixed_num = match(x, y)
+        y = fixed_num
+    elif len(y) > len(x):
+        fixed_num = match(y, x)
+        x = fixed_num
+    
+    #print(len(x), len(y))
+    #print(len(x) == len(y))
+
+    digits = len(x)
+
+    #if the inputs only have 1 digit, just multiply them normally
+    if digits == 1:
+        return int(x) * int(y)
+
+    else:
+
+        mid = int(len(x)/2)
+
+        #print(digits)
+        #print(mid)
+    
+        #split numbers in half
+        a = x[:mid]
+        b = x[mid:]
+        c = y[:mid]
+        d = y[mid:]
+
+        #nums = [a,b,c,d]
+
+        ac = karatsuba(a, c)
+        bd = karatsuba(b, d)
+        p = int(a) + int(b)
+        q = int(c) + int(d)
+        
+        #transform middle terms
+        p = transform(str(p))
+        q = transform(str(q))
+
+        #make sure the middle terms have the same length
+        if len(p) > len(q):
+            fixed_num = match(p, q)
+            q = fixed_num
+        elif len(q) > len(p):
+            fixed_num = match(q, p)
+            p = fixed_num
+
+        #print(p)
+        #print(q)
+
+        pq = karatsuba(p, q)
+
+        #final step of calculating middle term
+        abcd = pq - ac - bd
+
+        result = 10**(digits) * ac + 10**(mid) * abcd + bd
+
+        return result
+
+
+def main():
+    k_start = time.time()
+    result = karatsuba(sys.argv[1], sys.argv[2])
+    k_end = time.time()
+    k_time = k_end - k_start
+    print(result)
+    print("Karatsuba took ", k_time, " seconds")
+    check = 8539734222673567065463550869546574495034888535765114961879601127067743044893204848617875072216249073013374895871952806582723184
+    print(result == check)
+
+
+main()
+
