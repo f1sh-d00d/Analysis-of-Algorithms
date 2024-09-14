@@ -24,8 +24,24 @@ def mergesort(array):
     return sorted_array
 
 def merge(a, b):
-    new_array = a+b
+    new_array = []
 
+    '''compare first elements in each array. remove smallest and add it to new array. do this til one list runs out'''
+    while len(a) > 0 and len(b) > 0:
+        if a[0] <= b[0]:
+            new_array.append(a.pop(0))
+
+        else:
+            new_array.append(b.pop(0))
+    
+    '''since one list is empty, these loops will add the remaining elements in a or b to the new array, and it will automatically be sorted'''
+    for i in range(len(a)):
+        new_array.append(a.pop(0))
+    
+    for i in range(len(b)):
+        new_array.append(b.pop(0))
+    
+    print(new_array)
     return new_array
 
     
